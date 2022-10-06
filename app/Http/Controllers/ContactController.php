@@ -8,15 +8,11 @@ use App\Models\File;
 use App\Models\TemporaryContact;
 use Illuminate\Http\Request;
 use Excel;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
-use LVR\CreditCard\CardCvc;
 use LVR\CreditCard\CardNumber;
-use LVR\CreditCard\CardExpirationYear;
-use LVR\CreditCard\CardExpirationMonth;
 
 class ContactController extends Controller
 {
@@ -82,11 +78,11 @@ class ContactController extends Controller
                 $validator = Validator::make($data, [
                     "name"    => "required|alpha_dash",
                     "email"  => "required|email",
-                    "phone"  => "required|numeric", //|regex:/(01)[0-9]{10}/
+                    "phone"  => "required", //|regex:/(01)[0-9]{10}/
                     "address"  => "required|string",
                     "birthdate"  => "required|date",
-                    "cc_number"  => "required|numeric", //["required", new CardNumber],
-                    "cc_network"  => "required|string"
+                    "cc_number"  => "required", //["required", new CardNumber],
+                    "cc_network"  => "required"
                 ]);
     
                 $temp_contact = TemporaryContact::where('email', $request->email[$i])->first();
