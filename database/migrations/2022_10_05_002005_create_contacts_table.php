@@ -21,7 +21,7 @@ class CreateContactsTable extends Migration
             $table->text('address');
             $table->string('cc_number');
             $table->string('cc_network');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();

@@ -27,7 +27,7 @@ class HomeController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $contacts = $user->contacts()->paginate(5);
+        $contacts = $user->contacts()->orderBy('id', 'desc')->paginate(5);
         $temp_contacts = $user->temporary_contacts;
         $files = $user->files()->paginate(2);
 

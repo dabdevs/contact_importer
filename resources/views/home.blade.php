@@ -219,7 +219,7 @@
                                 @forelse ($files as $file)
                                     <tr>
                                         <td>{{ $file->name }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($file->created_at)->format('Y F j') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($file->created_at)->format('Y F j H:i:s') }}</td>
                                         <td>{{ $file->status }}</td>
                                     </tr>
                                 @empty 
@@ -261,7 +261,9 @@
                                     <td>{{ $contact->cc_network }}</td>
                                 </tr>
                             @empty 
-                                <center>No contacts yet.</center>
+                                <tr>
+                                    <td colspan="7" class="py-5"><center>No contacts yet.</center></td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>

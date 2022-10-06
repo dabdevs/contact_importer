@@ -15,9 +15,19 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        return User::create([ 
-            'email' => 'testuser@email.com',
-            'password' => Hash::make('1234'),
+        $this->create([
+            "email" => "testuser1@email.com", 
+            "password" => Hash::make('1234')
         ]);
+
+        $this->create([
+            "email" => "testuser2@email.com", 
+            "password" => Hash::make('1234')
+        ]);
+    }
+
+    private function create(array $data)
+    {
+        return User::create($data);
     }
 }

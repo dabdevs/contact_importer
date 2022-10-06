@@ -13,6 +13,7 @@ class ContactsTableSeeder extends Seeder
      */
     public function run()
     {
+        // Fake data
         \App\Models\Contact::factory()->count(10)->create();
     }
 }

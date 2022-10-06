@@ -8,6 +8,7 @@ use App\Models\File;
 use App\Models\TemporaryContact;
 use Illuminate\Http\Request;
 use Excel;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -81,6 +82,7 @@ class ContactController extends Controller
         $fields = $request->fields; 
         $fields_errors = '';
         $errors_count = 0;
+        $user = Auth::user();
         
         DB::beginTransaction();
         try {
@@ -99,38 +101,55 @@ class ContactController extends Controller
                 
                 $validator = Validator::make($data, [
                     "name"    => "required|alpha_dash",
-                    "email"  => "required|email|unique:contacts",
-                    "phone"  => "required|regex:/(01)[0-9]{9}/",
+                    "email"  => "required|email",
+                    "phone"  => "required", //|regex:/(01)[0-9]{9}/
                     "address"  => "required|string",
-                    "birthdate"  => "required|date",
-                    "cc_number"  =>  new CardNumber,
+                    "birthdate"  => "required|date",'unique:cards',
+                    "cc_number"  =>  ["required"],
                     "cc_network"  => "required|string"
                 ]);
     
                 $temp_contact = TemporaryContact::where('email', $request->email[$i])->first();
-                
+                $email = $request->email[$i];
+                $name = $request->name[$i];
+
                 if ($validator->fails()) {
-                    $email = $request->email[$i];
-                    $name = $request->name[$i];
                     $msg = implode('<br>', $validator->messages()->all());
                     $fields_errors .= "<br>".$name."(".$email.") could not be saved. <br> Errors: ".$msg;
                     Session::flash('fields_errors', $fields_errors);
                     $errors_count++;
                 } else {
-                    $data["birthdate"] = date('Y-m-d', strtotime($request->birthdate[$i]));
-                    $data["user_id"] = Auth::user()->id;
-                    Contact::create($data);
-                    $temp_contact->delete();
+                    $contact = Contact::where(["email" => $email, "user_id" => $user->id])->first();
+                    
+                    if ($contact != null) {
+                        $msg = "Contact already exists.";
+                        $fields_errors .= "<br>".$name."(".$email.") could not be saved. <br> Errors: ".$msg;
+                        Session::flash('fields_errors', $fields_errors);
+                        $errors_count++;
+                    } else {
+                        $data["birthdate"] = date('Y-m-d', strtotime($request->birthdate[$i]));
+                        $data["user_id"] = $user->id;
+                        Contact::create($data);
+                        $temp_contact->delete();
+                    }
                 }   
             }
 
             $file->status = count($request->name) == $errors_count? 'Failed' : 'Finished';
             $file->save();
+
+            if ($file->status === 'Failed') {
+                $message = 'Contacts could not be saved!';
+                $color_class = 'error';
+            } else {
+                $message = 'Contacts saved successfully!';
+                $color_class = 'success';
+            }
             
             Auth::user()->temporary_contacts()->delete();
             DB::commit();
 
-            return back()->with('success', 'Contacts saved successfully!');
+            return back()->with($color_class, $message);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
