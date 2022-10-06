@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\FileRequest;
 use App\Imports\ContactsImport;
 use App\Models\Contact;
 use App\Models\File;
 use App\Models\TemporaryContact;
 use Illuminate\Http\Request;
 use Excel;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
-use Maatwebsite\Excel\HeadingRowImport;
+use LVR\CreditCard\CardCvc;
+use LVR\CreditCard\CardNumber;
+use LVR\CreditCard\CardExpirationYear;
+use LVR\CreditCard\CardExpirationMonth;
 
 class ContactController extends Controller
 {
@@ -84,6 +85,8 @@ class ContactController extends Controller
         DB::beginTransaction();
         try {
             $file = File::findOrFail($request->file_id);
+            $file->status = 'Processing';
+            $file->save();
 
             for ($i=0; $i < count($request->name); $i++) { 
                 $data[$fields[0]] = $request->name[$i];
@@ -95,12 +98,12 @@ class ContactController extends Controller
                 $data[$fields[6]] = $request->cc_network[$i];
                 
                 $validator = Validator::make($data, [
-                    "name"    => "required|min:3",
+                    "name"    => "required|alpha_dash",
                     "email"  => "required|email|unique:contacts",
-                    "phone"  => "required|integer",
+                    "phone"  => "required|regex:/(01)[0-9]{9}/",
                     "address"  => "required|string",
                     "birthdate"  => "required|date",
-                    "cc_number"  => "required|string",
+                    "cc_number"  =>  new CardNumber,
                     "cc_network"  => "required|string"
                 ]);
     
@@ -108,8 +111,9 @@ class ContactController extends Controller
                 
                 if ($validator->fails()) {
                     $email = $request->email[$i];
+                    $name = $request->name[$i];
                     $msg = implode('<br>', $validator->messages()->all());
-                    $fields_errors .= "<br>".$email." could not be saved. <br> Errors: ".$msg;
+                    $fields_errors .= "<br>".$name."(".$email.") could not be saved. <br> Errors: ".$msg;
                     Session::flash('fields_errors', $fields_errors);
                     $errors_count++;
                 } else {

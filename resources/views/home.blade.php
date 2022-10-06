@@ -219,7 +219,7 @@
                                 @forelse ($files as $file)
                                     <tr>
                                         <td>{{ $file->name }}</td>
-                                        <td>{{ $file->created_at }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($file->created_at)->format('Y F j') }}</td>
                                         <td>{{ $file->status }}</td>
                                     </tr>
                                 @empty 
@@ -256,7 +256,7 @@
                                     <td>{{ $contact->phone }}</td>
                                     <td>{{ $contact->email }}</td>
                                     <td>{{ $contact->address }}</td>
-                                    <td>{{ $contact->birthdate }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($contact->birthdate)->format('Y F j') }}</td>
                                     <td>{{ $contact->cc_number }}</td>
                                     <td>{{ $contact->cc_network }}</td>
                                 </tr>
@@ -267,6 +267,9 @@
                     </table>
                 </div>
             </div>
+        </div>
+        <div class="col-md-12 mt-5">
+            {{ $contacts->links() }}
         </div>
     </div>
 </div>

@@ -27,9 +27,9 @@ class HomeController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $contacts = $user->contacts;
+        $contacts = $user->contacts()->paginate(5);
         $temp_contacts = $user->temporary_contacts;
-        $files = $user->files;
+        $files = $user->files()->paginate(2);
 
         return view('home', [
             'contacts' => $contacts,
