@@ -58,4 +58,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(TemporaryContact::class);
     }
+
+    /**
+     * Get all of the files for the User
+     *
+     */
+    public function files()
+    {
+        return $this->hasMany(File::class);
+    }
 }

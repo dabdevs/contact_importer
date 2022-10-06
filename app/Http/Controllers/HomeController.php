@@ -29,10 +29,12 @@ class HomeController extends Controller
         $user = Auth::user();
         $contacts = $user->contacts;
         $temp_contacts = $user->temporary_contacts;
+        $files = $user->files;
 
         return view('home', [
             'contacts' => $contacts,
-            'temp_contacts' => $temp_contacts
+            'temp_contacts' => $temp_contacts,
+            'files' => $files
         ]);
     }
 }

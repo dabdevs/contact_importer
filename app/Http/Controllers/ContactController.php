@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FileRequest;
 use App\Imports\ContactsImport;
 use App\Models\Contact;
+use App\Models\File;
 use App\Models\TemporaryContact;
 use Illuminate\Http\Request;
 use Excel;
@@ -49,10 +50,21 @@ class ContactController extends Controller
             'file' => 'required|mimes:csv,txt'
         ]);
 
+        $user = Auth::user();
+
+        $file = File::create([ 
+            'name' => $request->file->getClientOriginalName(),
+            'user_id' => $user->id
+        ]);
+
         $data = Excel::toArray(new ContactsImport, $request->file)[0];
 
+        if (empty($data)) 
+            return redirect('home')->with('error', 'Please upload a non empty file!');
+
         foreach ($data as $contact) {
-            $contact["user_id"] = Auth::user()->id; 
+            $contact["user_id"] = $user->id; 
+            $contact["file_id"] = $file->id; 
             TemporaryContact::create($contact);
         }
 
@@ -67,9 +79,12 @@ class ContactController extends Controller
     {
         $fields = $request->fields; 
         $fields_errors = '';
+        $errors_count = 0;
         
         DB::beginTransaction();
         try {
+            $file = File::findOrFail($request->file_id);
+
             for ($i=0; $i < count($request->name); $i++) { 
                 $data[$fields[0]] = $request->name[$i];
                 $data[$fields[1]] = $request->phone[$i];
@@ -96,6 +111,7 @@ class ContactController extends Controller
                     $msg = implode('<br>', $validator->messages()->all());
                     $fields_errors .= "<br>".$email." could not be saved. <br> Errors: ".$msg;
                     Session::flash('fields_errors', $fields_errors);
+                    $errors_count++;
                 } else {
                     $data["birthdate"] = date('Y-m-d', strtotime($request->birthdate[$i]));
                     $data["user_id"] = Auth::user()->id;
@@ -103,8 +119,11 @@ class ContactController extends Controller
                     $temp_contact->delete();
                 }   
             }
+
+            $file->status = count($request->name) == $errors_count? 'Failed' : 'Finished';
+            $file->save();
             
-            TemporaryContact::truncate();
+            Auth::user()->temporary_contacts()->delete();
             DB::commit();
 
             return back()->with('success', 'Contacts saved successfully!');

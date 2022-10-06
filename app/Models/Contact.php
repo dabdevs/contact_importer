@@ -17,6 +17,7 @@ class Contact extends Model
         'cc_number',
         'cc_network',
         'email',
+        'file_id',
         'user_id'
     ];
 

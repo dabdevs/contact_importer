@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class TemporaryContact extends Model
 {
-    protected $table = 'temporary_contacts';
-
     protected $fillable = [
         'name',
         'birthdate',
@@ -16,6 +14,7 @@ class TemporaryContact extends Model
         'cc_number',
         'cc_network',
         'email',
+        'file_id',
         'user_id'
     ];
 

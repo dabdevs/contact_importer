@@ -20,6 +20,12 @@
                         </div>
                     @endif 
 
+                    @if (session('error'))
+                        <div class="alert alert-danger" role="alert">
+                            {{ session('error') }}
+                        </div>
+                    @endif 
+
                     @if (session('fields_errors'))
                         <div class="alert alert-danger" role="alert">
                             {!! session('fields_errors') !!}
@@ -93,6 +99,7 @@
                                             <td>
                                                 {{ $contact->cc_network }}
                                                 <input name="cc_network[]" type="hidden" value="{{ $contact->cc_network }}">
+                                                <input name="file_id" type="hidden" value="{{ $contact->file_id }}">
                                             </td>
                                         </tr>
                                     @empty
@@ -194,6 +201,37 @@
             </div>
         </div>
     </div>
+
+    @if(count($files) > 0)
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">{{ __('Uploaded files') }}</div>
+
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <th>File</th>
+                                <th>Date uploaded</th>
+                                <th>Status</th>
+                            </thead>
+                            <tbody>
+                                @forelse ($files as $file)
+                                    <tr>
+                                        <td>{{ $file->name }}</td>
+                                        <td>{{ $file->created_at }}</td>
+                                        <td>{{ $file->status }}</td>
+                                    </tr>
+                                @empty 
+                                    <center>No files found.</center>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <div class="row justify-content-center mt-5">
         <div class="col-md-12">
