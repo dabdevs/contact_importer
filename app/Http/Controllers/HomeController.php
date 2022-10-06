@@ -29,7 +29,7 @@ class HomeController extends Controller
         $user = Auth::user();
         $contacts = $user->contacts()->orderBy('id', 'desc')->paginate(5);
         $temp_contacts = $user->temporary_contacts;
-        $files = $user->files()->paginate(2);
+        $files = $user->files;
 
         return view('home', [
             'contacts' => $contacts,
